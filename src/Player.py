@@ -1,5 +1,5 @@
 from src.Entity import Entity
-import keyboard
+from src.InputManager import input_manager as keyboard
 
 class Player(Entity):
     def __init__(self, level):
@@ -14,22 +14,22 @@ class Player(Entity):
         forward = 0.0
         vertical = 0.0
         
-        if (keyboard.is_pressed(19)):   # R
+        if (keyboard.is_pressed('r')):   # R
             self.resetPosition()
             
-        if (keyboard.is_pressed(17)):   # W
+        if (keyboard.is_pressed('w')):   # W
             forward += 1
             
-        if (keyboard.is_pressed(31)):   # S
+        if (keyboard.is_pressed('s')):   # S
             forward -= 1
             
-        if (keyboard.is_pressed(30)):   # A
+        if (keyboard.is_pressed('a')):   # A
             vertical -= 1
             
-        if (keyboard.is_pressed(32)):   # D
+        if (keyboard.is_pressed('d')):   # D
             vertical += 1
             
-        if (keyboard.is_pressed(57)):   # Space
+        if (keyboard.is_pressed('space')):   # Space
             if (self.onGround):
                 self.motionY = 0.12
                 
