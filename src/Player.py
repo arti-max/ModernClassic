@@ -1,5 +1,5 @@
 from src.Entity import Entity
-from src.InputManager import input_manager as keyboard
+from ursina import held_keys
 
 class Player(Entity):
     def __init__(self, level):
@@ -14,23 +14,23 @@ class Player(Entity):
         forward = 0.0
         vertical = 0.0
         
-        if (keyboard.is_pressed('r')):   # R
+        if held_keys['r']:
             self.resetPosition()
             
-        if (keyboard.is_pressed('w')):   # W
+        if held_keys['w']:
             forward += 1
             
-        if (keyboard.is_pressed('s')):   # S
+        if held_keys['s']:
             forward -= 1
             
-        if (keyboard.is_pressed('a')):   # A
+        if held_keys['a']:
             vertical -= 1
             
-        if (keyboard.is_pressed('d')):   # D
+        if held_keys['d']:
             vertical += 1
             
-        if (keyboard.is_pressed('space')):   # Space
-            if (self.onGround):
+        if held_keys['space']:
+            if self.onGround:
                 self.motionY = 0.12
                 
         self.moveRelative(vertical, forward, 0.02 if self.onGround else 0.005)
