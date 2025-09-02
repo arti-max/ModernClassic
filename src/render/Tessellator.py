@@ -1,4 +1,5 @@
 from ursina import *
+from ursina.shaders import unlit_shader
 
 class Tessellator:
     
@@ -34,7 +35,7 @@ class Tessellator:
             self.textureCoordBuffer.append((self.textureU, self.textureV))
             
         if (self.hasColor):
-            self.colorBuffer.append(color.rgba(self.r * 255, self.g * 255, self.b * 255, 255))
+            self.colorBuffer.append(color.rgba(self.r, self.g, self.b, 1))
         
         self.vertices += 1
         
@@ -72,12 +73,13 @@ class Tessellator:
 
         entity = Entity(
             model=Mesh(
-                vertices=self.vertexBuffer,
+                vertices=list(self.vertexBuffer),
                 triangles=triangles,
-                uvs=self.textureCoordBuffer if self.hasTexture else None,
-                colors=self.colorBuffer if self.hasColor else None,
+                uvs=list(self.textureCoordBuffer) if self.hasTexture else None,
+                colors=list(self.colorBuffer) if self.hasColor else None,
             ),
-            texture=self.atlas
+            texture=self.atlas,
+            unlit=True
         )
         
         self.clear()

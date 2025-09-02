@@ -19,7 +19,7 @@ class Level:
                    self.blocks[self.generate_index(x, y, z)] = 1 
                    
                    
-        for i in range(1000):
+        for i in range(400):
             caveSize = np.random.randint(1, 8)
             
             caveX = np.random.randint(0, width)
@@ -75,10 +75,10 @@ class Level:
     def calcLightDepths(self, minX, minZ, maxX, maxZ):
         for x in range(minX, maxX):
             for z in range(minZ, maxZ):
-                prevData = self.lightDepths[z + z * self.width]
+                prevData = self.lightDepths[x + z * self.width]
                 
                 depth = self.depth - 1
-                while (depth > 0 and (not self.isLightBlocker(x, depth, z))):
+                while (depth > 0 and not self.isLightBlocker(x, depth, z)):
                     depth -= 1
                     
                     
@@ -99,7 +99,7 @@ class Level:
         return self.isSolidTile(x, y, z)
     
     def getBrightness(self, x, y, z):
-        dark = 0.8
+        dark = 0.5
         light = 1.0
         
         if (x < 0 or y < 0 or z < 0 or x >= self.width or y >= self.depth or z >= self.height):
@@ -109,6 +109,9 @@ class Level:
             return dark
         
         return light    # Unknown bright
+    
+    def isLit(self, x, y, z):
+        return (x < 0 or y < 0 or z < 0 or x >= self.width or z >= self.height or y >= self.lightDepths[x + z * self.width])
     
     def getCubes(self, boundingBox: AABB) -> list[AABB]:
         boundingBoxList: list[AABB] = []

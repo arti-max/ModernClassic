@@ -10,7 +10,7 @@ from src.level.Chunk import Chunk
 if __name__ == "__main__":
     app = Ursina()
     
-    level = Level(32, 32, 64)
+    level = Level(128, 128, 64)
     levelRenderer = LevelRenderer(level)
     player = Player(level)
     timer = Timer(20)
@@ -40,8 +40,8 @@ if __name__ == "__main__":
         player.tick()
     
     def render(partialTicks):
-        motionX = mouse.velocity.x * 6.55
-        motionY = mouse.velocity.y * 6.55
+        motionX = mouse.velocity.x * 12.55
+        motionY = mouse.velocity.y * 12.55
         
         player.turn(motionX, motionY)
         
