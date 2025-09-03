@@ -13,7 +13,7 @@ class Self:
         pass
 
 if __name__ == "__main__":
-    app = Ursina()
+    app = Ursina(title='ModernClassic', development_mode=False, window_type='onscreen')
     
     self = Self()
     
@@ -134,6 +134,9 @@ if __name__ == "__main__":
 
     def update():
         global frames, lastTime
+        
+        if (held_keys['escape']):
+            exit(0)
         
         self.timer.advanceTime()
         
