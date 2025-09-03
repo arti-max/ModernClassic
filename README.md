@@ -16,7 +16,7 @@ Here are a few moments from the world of ModernClassic.
 
 | In-Game World                                    | Building Mechanics                              |
 | -----------------------------------------------  | ----------------------------------------------- |
-| ![Screenshot of the game world](path/to/your/screenshot1.png) | ![Screenshot of building a structure](path/to/your/screenshot2.png) |
+| ![Screenshot of the game world](screenshots/1.png) | ![Screenshot of building a structure](screenshots/2.png) |
 
 ---
 
