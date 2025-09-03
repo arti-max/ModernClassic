@@ -120,6 +120,9 @@ if __name__ == "__main__":
             self.level.setTile(x, y, z, 1)
         elif (not mouse.left):
             self.is_mouse_left = False
+            
+        if (held_keys['enter']):
+            self.level.save()
         
         moveCameraToPlayer(partialTicks)
         

@@ -3,6 +3,7 @@ import random
 from src.phys.AABB import AABB
 import numpy as np
 from src.level.LeveListener import LevelListener
+import pickle
 
 
 class Level:
@@ -23,11 +24,32 @@ class Level:
                    self.blocks[self.generate_index(x, y, z)] = (1 if (y <= int(depth * 2 / 3)) else 0)
                              
                              
-        print(self.blocks)
         self.calcLightDepths(0, 0, width, height)
+        
+        self.load()
                     
     def generate_index(self, x, y, z):
         return x + y * self.width + z * self.width * self.depth
+    
+    def load(self):
+        try:
+            file = open("level.sav", "rb")
+            self.blocks = pickle.load(file)
+            self.calcLightDepths(0, 0, self.width, self.height)
+            file.close()
+            
+            for listener in self.levelListeners:
+                listener.allChanged()
+        except Exception as e:
+            print(f"Error while loading level: {e}")
+    
+    def save(self):
+        try:
+            file = open("level.sav", "wb")
+            pickle.dump(self.blocks, file)
+            file.close()
+        except Exception as e:
+            print(f"Error while saving level: {e}")
     
     def calcLightDepths(self, minX, minZ, maxX, maxZ):
         for x in range(minX, maxX):
