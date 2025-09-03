@@ -31,11 +31,11 @@ class Player(Entity):
             
         if held_keys['space']:
             if self.onGround:
-                self.motionY = 0.12
+                self.motionY = 0.32
                 
-        self.moveRelative(vertical, forward, 0.02 if self.onGround else 0.005)
+        self.moveRelative(vertical, forward, 0.02 if self.onGround else 0.009)
         
-        self.motionY -= 0.005
+        self.motionY -= 0.03
         
         self.move(self.motionX, self.motionY, self.motionZ)
         

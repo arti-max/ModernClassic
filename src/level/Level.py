@@ -2,6 +2,7 @@ import math
 import random
 from src.phys.AABB import AABB
 import numpy as np
+from src.level.LeveListener import LevelListener
 
 
 class Level:
@@ -10,63 +11,19 @@ class Level:
         self.height = height
         self.depth = depth
         
-        self.blocks = np.ones(width * height * depth, dtype=np.uint8)
+        self.blocks = [-1] * width * height * depth
+        # self.blocks = np.ones(width * height * depth, dtype=np.uint8)
         self.lightDepths = [0] * width * height
+        
+        self.levelListeners: LevelListener = []
         
         for x in range(width):
             for z in range(height):
                 for y in range(depth):
-                   self.blocks[self.generate_index(x, y, z)] = 1 
-                   
-                   
-        for i in range(400):
-            caveSize = np.random.randint(1, 8)
-            
-            caveX = np.random.randint(0, width)
-            caveY = np.random.randint(0, depth)
-            caveZ = np.random.randint(0, height)
-            
-            for radius in range(1, caveSize): # Начинаем с 1
-                radius_sq = radius * radius
-                
-                # 1. Генерируем 1000 случайных смещений за один вызов
-                offsets = np.random.randint(-radius, radius + 1, size=(1000, 3))
-                
-                # 2. Вычисляем квадрат расстояния для всех 1000 точек сразу
-                distances_sq = np.sum(np.square(offsets), axis=1)
-                
-                # 3. Находим только те точки, которые находятся внутри сферы
-                valid_points_mask = distances_sq <= radius_sq
-                valid_offsets = offsets[valid_points_mask]
-                
-                if valid_offsets.shape[0] == 0:
-                    continue
-                    
-                # 4. Вычисляем абсолютные координаты всех валидных точек
-                tile_coords = valid_offsets + [caveX, caveY, caveZ]
-                
-                # 5. Применяем фильтр по границам ко всем точкам
-                in_bounds_mask = (
-                    (tile_coords[:, 0] > 0) & (tile_coords[:, 0] < width - 1) &
-                    (tile_coords[:, 1] > 0) & (tile_coords[:, 1] < depth) &
-                    (tile_coords[:, 2] > 0) & (tile_coords[:, 2] < height - 1)
-                )
-                
-                final_coords = tile_coords[in_bounds_mask]
-                
-                if final_coords.shape[0] == 0:
-                    continue
-                
-                # 6. Вычисляем индексы для всех финальных точек за один раз
-                indices_float = (final_coords[:, 0] + 
-                final_coords[:, 1] * width + 
-                final_coords[:, 2] * width * depth)
-                
-                indices = indices_float.astype(np.int64)
-                
-                # 7. Обнуляем все нужные блоки одной командой
-                self.blocks[indices] = 0
-                   
+                   self.blocks[self.generate_index(x, y, z)] = (1 if (y <= int(depth * 2 / 3)) else 0)
+                             
+                             
+        print(self.blocks)
         self.calcLightDepths(0, 0, width, height)
                     
     def generate_index(self, x, y, z):
@@ -75,7 +32,7 @@ class Level:
     def calcLightDepths(self, minX, minZ, maxX, maxZ):
         for x in range(minX, maxX):
             for z in range(minZ, maxZ):
-                prevData = self.lightDepths[x + z * self.width]
+                prevDepth = self.lightDepths[x + z * self.width]
                 
                 depth = self.depth - 1
                 while (depth > 0 and not self.isLightBlocker(x, depth, z)):
@@ -83,9 +40,22 @@ class Level:
                     
                     
                 self.lightDepths[x + z * self.width] = depth
+                
+                if (prevDepth != depth):
+                    minTileChangeY = min(prevDepth, depth)
+                    maxTileChangeY = max(prevDepth, depth)
+                    
+                    for listener in self.levelListeners:
+                        listener.lightColumnChanged(x, z, minTileChangeY, maxTileChangeY)
             
     def isSolidTile(self, x, y, z):
         return self.isTile(x, y, z)
+    
+    def getTile(self, x, y, z):
+        if (not self.isTile(x, y, z)):
+            return -1
+        
+        return self.blocks[self.generate_index(x, y, z)]
     
     def isTile(self, x, y, z):
         if (x < 0 or y < 0 or z < 0 or x >= self.width or y >= self.depth or z >= self.height):
@@ -138,3 +108,21 @@ class Level:
                         boundingBoxList.append(AABB(x, y, z, x+1, y+1, z+1))
                         
         return boundingBoxList
+    
+    def addListener(self, listener: LevelListener):
+        self.levelListeners.append(listener)
+    
+    def setTile(self, x, y, z, id):
+        if (x < 0 or y < 0 or z < 0 or x >= self.width or y >= self.depth or z >= self.height):
+            return
+        
+        if (self.blocks[self.generate_index(x, y, z)] == id):
+            return
+        
+        self.blocks[self.generate_index(x, y, z)] = id
+        
+        self.calcLightDepths(x, z, x + 1, z + 1)
+        
+        for listener in self.levelListeners:
+            listener.tileChanged(x, y, z)
+        

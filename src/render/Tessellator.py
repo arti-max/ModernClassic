@@ -79,10 +79,12 @@ class Tessellator:
                 colors=list(self.colorBuffer) if self.hasColor else None,
             ),
             texture=self.atlas,
-            unlit=True
+            unlit=True,
+            collider='mesh'
         )
         
         self.clear()
+        
         
         return entity
     
