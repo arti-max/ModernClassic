@@ -4,15 +4,13 @@
   <img src="path/to/your/logo_or_banner.png" alt="Project Banner" width="720">
 </p>
 
-A procedural voxel world exploration and creation game inspired by early versions of Minecraft, built from the ground up in Python using the **Ursina Engine**. This project showcases a custom-built rendering pipeline, dynamic chunk management, and a physics system to create an infinite, modifiable world.
+A creation game inspired by early versions of Minecraft, built from the ground up in Python using the **Ursina Engine**. This project showcases a custom-built rendering pipeline and a simple physics system.
 
 ---
 
 ## 📸 Screenshots
 
 Here are a few moments from the world of ModernClassic.
-
-*_(Replace the placeholder images with your actual screenshots. You can drag and drop them into a GitHub issue or pull request to get a URL, or store them in your repository.)_*
 
 | In-Game World                                    | Building Mechanics                              |
 | -----------------------------------------------  | ----------------------------------------------- |
@@ -22,12 +20,9 @@ Here are a few moments from the world of ModernClassic.
 
 ## ✨ Features
 
-- **Procedural World Generation:** Infinite, voxel-based terrain generated on the fly.
-- **Dynamic Chunk System:** Efficiently loads and unloads parts of the world around the player to save memory and maintain performance.
 - **Custom Rendering Pipeline:** A from-scratch `Tessellator` class that builds chunk meshes, handling ambient occlusion and basic lighting.
 - **Physics and Collisions:** A simple and effective physics implementation for player movement and interaction with the world.
 - **Block Interaction:** Place and destroy blocks to shape the world around you.
-- **Cross-Platform Support:** Designed to be built and run on Windows, macOS, and Linux.
 
 ---
 
@@ -86,7 +81,7 @@ python main.py
 
 ---
 
-## 🏗️ Building from Source
+## 🏗️ Building from Source ( Not Working)
 
 This project uses **Nuitka** to compile into a standalone executable.
 
@@ -118,11 +113,13 @@ python3 -m nuitka --standalone --macos-create-app-bundle --include-data-dir=res=
 
 ## Roadmap
 
-- [ ] Implement a basic inventory system.
+- [ ] Implement a basic liquid system
 - [ ] Add more block types with unique properties.
 - [ ] Improve world generation with biomes, trees, and structures.
 - [ ] Introduce simple enemy mobs.
 - [ ] Implement a day/night cycle.
+- [ ] Add multiplayer
+- [ ] Create UI for pause menu
 
 ---
 
