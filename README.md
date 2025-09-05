@@ -56,9 +56,9 @@ To get a local copy up and running, follow these simple steps.
     ```
 3.  Install the required Python packages:
     ```
-    pip install -r requirements.txt
+    pip install ursina
+    pip install numpy
     ```
-    *(Note: You will need to create a `requirements.txt` file. You can generate one with `pip freeze > requirements.txt`)*
 
 ### Running the Game
 
