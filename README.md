@@ -12,7 +12,7 @@ A creation game inspired by early versions of Minecraft, built from the ground u
 
 Here are a few moments from the world of ModernClassic.
 
-| In-Game World                                    | Building Mechanics                              |
+| In-Game World :)                                  | Building Mechanics                              |
 | -----------------------------------------------  | ----------------------------------------------- |
 | ![Screenshot of the game world](screenshots/1.png) | ![Screenshot of building a structure](screenshots/2.png) |
 
