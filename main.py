@@ -16,6 +16,8 @@ class Self:
 
 if __name__ == "__main__":
     app = Ursina(title='ModernClassic', development_mode=False, fullscreen=False, borderless=False) # size=(720, 480)
+    window.color = color.rgba(0.5, 0.8, 1.0, 1.0)
+    
     
     self = Self()
     
@@ -90,6 +92,8 @@ if __name__ == "__main__":
             if face != -1:
                 self.hitResult = HitResult(x=x, y=y, z=z, face=face, entity=hit_info.entity)
                 return
+            
+        self.hitResult = None
     
 
     def tick():
@@ -149,8 +153,7 @@ if __name__ == "__main__":
         
         self.levelRenderer.render(1)
         
-        if (self.hitResult is not None):
-            self.levelRenderer.renderHit(self.hitResult)
+        self.levelRenderer.renderHit(self.hitResult)
 
     def update():
         global frames, lastTime
