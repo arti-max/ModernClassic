@@ -7,13 +7,15 @@ from src.level.LevelRenderer import LevelRenderer
 from src.Player import Player
 from src.Timer import Timer
 from src.level.Chunk import Chunk
+from src.character.Human import Human
+import src.level.TileType as TileType
 
 class Self:
     def __init__(self):
         pass
 
 if __name__ == "__main__":
-    app = Ursina(title='ModernClassic', development_mode=False, window_type='onscreen')
+    app = Ursina(title='ModernClassic', development_mode=False, fullscreen=False, borderless=False) # size=(720, 480)
     
     self = Self()
     
@@ -24,6 +26,10 @@ if __name__ == "__main__":
     self.player = Player(self.level)
     self.timer = Timer(20)
     
+    self.humans = []
+    
+    self.current_block = TileType.STONE.id
+    
     self.is_mouse_right = False
     self.is_mouse_left = False
     # destroy(camera.ui.parent)
@@ -31,6 +37,9 @@ if __name__ == "__main__":
     
     frames = 0
     lastTime = time.time()
+    
+    for i in range(1):
+        self.humans.append(Human(self.level, 0.0, 0.0, 0.0))
     
     
     def moveCameraToPlayer(partialTicks):
@@ -84,6 +93,9 @@ if __name__ == "__main__":
     
 
     def tick():
+        for human in self.humans:
+            human.tick()
+        
         self.player.tick()
     
     def render(partialTicks):
@@ -117,16 +129,24 @@ if __name__ == "__main__":
             if (self.hitResult.face == 4): x -= 1
             if (self.hitResult.face == 5): x += 1
             
-            self.level.setTile(x, y, z, 1)
+            self.level.setTile(x, y, z, self.current_block)
         elif (not mouse.left):
             self.is_mouse_left = False
             
         if (held_keys['enter']):
             self.level.save()
+        elif (held_keys['1']): self.current_block = TileType.STONE.id
+        elif (held_keys['2']): self.current_block = TileType.GRASS.id
+        elif (held_keys['3']): self.current_block = TileType.PLANKS.id
+        elif (held_keys['6']): self.current_block = TileType.BUSH.id
         
         moveCameraToPlayer(partialTicks)
         
         self.levelRenderer.render(0)
+        
+        for human in self.humans:
+            human.render(partialTicks)
+        
         self.levelRenderer.render(1)
         
         if (self.hitResult is not None):

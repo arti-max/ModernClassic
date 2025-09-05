@@ -43,6 +43,11 @@ class Entity:
         
         self.boundingBox = AABB(x - width, y - height, z - width, x + width, y + height, z + width)
         
+    def tick(self):
+        self.prevX = self.x
+        self.prevY = self.y
+        self.prevZ = self.z
+        
     def resetPosition(self) -> None:
         x: float = random.random() * self.level.width
         y: float = self.level.depth + 3

@@ -7,9 +7,7 @@ class Player(Entity):
         
 
     def tick(self):
-        self.prevX = self.x
-        self.prevY = self.y
-        self.prevZ = self.z
+        super().tick()
         
         forward = 0.0
         vertical = 0.0

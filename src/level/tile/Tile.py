@@ -1,10 +1,17 @@
-
+from src.phys.AABB import AABB
 
 
 class Tile:
     
-    def __init__(self, textureID):
-        self.textureID = textureID
+    TILES = [0] * 256
+    
+    def __init__(self, id, textureId=None):
+        self.id = id
+        
+        if textureId != None:
+            self.textureID = textureId
+        
+        Tile.TILES[id] = self
         
     
     def render(self, tessellator, level, layer, x, y, z):
@@ -47,57 +54,73 @@ class Tile:
     def shouldRenderFace(self, level, x, y, z, layer):
         return not level.isSolidTile(x, y, z) and (level.isLit(x, y, z) ^ layer == 1)
     
+    def getTexture(self, face):
+        return self.textureID
+    
     def renderFace(self, tessellator, x, y, z, face):
-        minU = self.textureID / 16.0;
-        maxU = minU + 16 / 256;
-        maxV = 1.0; # Верхний край текстуры
-        minV = maxV - (16 / 256); # Отступаем вниз на высоту тайла
+        textureID: int = self.getTexture(face)
         
-        minX = x + 0.0;
-        maxX = x + 1.0;
-        minY = y + 0.0;
-        maxY = y + 1.0;
-        minZ = z + 0.0;
-        maxZ = z + 1.0;
+        tile_size = 1.0 / 16.0 
+        
+        col = textureID % 16
+        row = textureID // 16
+        
+        minU = col * tile_size
+        maxU = minU + tile_size
+        
+        minV = 1.0 - (row * tile_size) - tile_size
+        maxV = 1.0 - (row * tile_size)
+
+        
+        minX = x + 0.0
+        maxX = x + 1.0
+        minY = y + 0.0
+        maxY = y + 1.0
+        minZ = z + 0.0
+        maxZ = z + 1.0
         
         # Y-
         if face == 0:
+            tessellator.vertexUV(minX, minY, minZ, minU, minV)
             tessellator.vertexUV(minX, minY, maxZ, minU, maxV)
             tessellator.vertexUV(maxX, minY, maxZ, maxU, maxV)
             tessellator.vertexUV(maxX, minY, minZ, maxU, minV)
-            tessellator.vertexUV(minX, minY, minZ, minU, minV)
-                
-        # Y+
+        # Y+ 
         if face == 1:
-            tessellator.vertexUV(maxX, maxY, maxZ, maxU, maxV)
             tessellator.vertexUV(minX, maxY, maxZ, minU, maxV)
             tessellator.vertexUV(minX, maxY, minZ, minU, minV)
             tessellator.vertexUV(maxX, maxY, minZ, maxU, minV)
-                
-        # Z-
+            tessellator.vertexUV(maxX, maxY, maxZ, maxU, maxV)
+        # Z- 
         if face == 2:
-            tessellator.vertexUV(minX, maxY, minZ, maxU, minV)
-            tessellator.vertexUV(minX, minY, minZ, maxU, maxV)
-            tessellator.vertexUV(maxX, minY, minZ, minU, maxV)
-            tessellator.vertexUV(maxX, maxY, minZ, minU, minV)
-                
-        # Z+
+            tessellator.vertexUV(minX, minY, minZ, maxU, minV)
+            tessellator.vertexUV(maxX, minY, minZ, minU, minV)
+            tessellator.vertexUV(maxX, maxY, minZ, minU, maxV)
+            tessellator.vertexUV(minX, maxY, minZ, maxU, maxV)
+        # Z+ 
         if face == 3:
-            tessellator.vertexUV(minX, maxY, maxZ, minU, minV)
-            tessellator.vertexUV(maxX, maxY, maxZ, maxU, minV)
-            tessellator.vertexUV(maxX, minY, maxZ, maxU, maxV)
-            tessellator.vertexUV(minX, minY, maxZ, minU, maxV)
-                
-        # X-
+            tessellator.vertexUV(maxX, minY, maxZ, maxU, minV)
+            tessellator.vertexUV(minX, minY, maxZ, minU, minV)
+            tessellator.vertexUV(minX, maxY, maxZ, minU, maxV)
+            tessellator.vertexUV(maxX, maxY, maxZ, maxU, maxV)
+        # X- 
         if face == 4:
-            tessellator.vertexUV(minX, maxY, maxZ, maxU, minV)
-            tessellator.vertexUV(minX, minY, maxZ, maxU, maxV)
-            tessellator.vertexUV(minX, minY, minZ, minU, maxV)
-            tessellator.vertexUV(minX, maxY, minZ, minU, minV)
-                
-        # X+
+            tessellator.vertexUV(minX, minY, maxZ, maxU, minV)
+            tessellator.vertexUV(minX, minY, minZ, minU, minV)
+            tessellator.vertexUV(minX, maxY, minZ, minU, maxV)
+            tessellator.vertexUV(minX, maxY, maxZ, maxU, maxV)
+        # X+ 
         if face == 5:
-            tessellator.vertexUV(maxX, minY, maxZ, maxU, maxV)
-            tessellator.vertexUV(maxX, maxY, maxZ, maxU, minV)
-            tessellator.vertexUV(maxX, maxY, minZ, minU, minV)
-            tessellator.vertexUV(maxX, minY, minZ, minU, maxV)
+            tessellator.vertexUV(maxX, minY, minZ, maxU, minV)
+            tessellator.vertexUV(maxX, minY, maxZ, minU, minV)
+            tessellator.vertexUV(maxX, maxY, maxZ, minU, maxV)
+            tessellator.vertexUV(maxX, maxY, minZ, maxU, maxV)
+            
+    def getAABB(self, x, y, z):
+        return AABB(x, y, z, x + 1, y + 1, z + 1)
+    
+    def blocksLight(self):
+        return True
+    
+    def isSolid(self):
+        return True

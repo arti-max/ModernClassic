@@ -1,3 +1,4 @@
+import numpy as np
 from ursina import *
 from ursina.shaders import unlit_shader
 
@@ -23,20 +24,67 @@ class Tessellator:
         self.g = 1
         self.b = 1
         
+        self.collider=None
+        
+        self.matrix_stack = [np.identity(4)]
+        
         self.clear()
         
     def set_texture_atlas(self, texture):
         self.atlas = texture
         
+    def set_collider(self, collider):
+        self.collider = collider
+        
+    def push_matrix(self):
+        self.matrix_stack.append(np.copy(self.matrix_stack[-1]))
+        
+    def pop_matrix(self):
+        if len(self.matrix_stack) > 1:
+            self.matrix_stack.pop()
+
+    def translate(self, x, y, z):
+        translation_matrix = np.array([
+            [1, 0, 0, x],
+            [0, 1, 0, y],
+            [0, 0, 1, z],
+            [0, 0, 0, 1]
+        ], dtype=float)
+        
+        self.matrix_stack[-1] = translation_matrix @ self.matrix_stack[-1]
+        
+    def rotate(self, angle_deg, x, y, z):
+        if angle_deg == 0: return
+        angle_rad = np.radians(angle_deg)
+        c, s = np.cos(angle_rad), np.sin(angle_rad)
+        axis = np.array([x, y, z], dtype=float)
+        axis = axis / np.linalg.norm(axis)
+        ux, uy, uz = axis
+        rot_matrix = np.array([
+            [c + ux*ux*(1-c),   ux*uy*(1-c) - uz*s, ux*uz*(1-c) + uy*s, 0],
+            [uy*ux*(1-c) + uz*s, c + uy*uy*(1-c),   uy*uz*(1-c) - ux*s, 0],
+            [uz*ux*(1-c) - uy*s, uz*uy*(1-c) + ux*s, c + uz*uz*(1-c),   0],
+            [0, 0, 0, 1]
+        ])
+        self.matrix_stack[-1] = rot_matrix @ self.matrix_stack[-1]
+        
+    def scale(self, x, y, z):
+        scale_matrix = np.array([
+            [x, 0, 0, 0],
+            [0, y, 0, 0],
+            [0, 0, z, 0],
+            [0, 0, 0, 1]
+        ], dtype=float)
+        self.matrix_stack[-1] = scale_matrix @ self.matrix_stack[-1]
+        
     def vertex(self, x, y, z):
-        self.vertexBuffer.append((x, y, z))
+        vec4 = np.array([x, y, z, 1.0])
+        transformed_vec = self.matrix_stack[-1] @ vec4
+        tx, ty, tz = transformed_vec[0], transformed_vec[1], transformed_vec[2]
         
-        if (self.hasTexture):
-            self.textureCoordBuffer.append((self.textureU, self.textureV))
-            
-        if (self.hasColor):
-            self.colorBuffer.append(color.rgba(self.r, self.g, self.b, 1))
-        
+        self.vertexBuffer.append((tx, ty, tz))
+        if self.hasTexture: self.textureCoordBuffer.append((self.textureU, self.textureV))
+        if self.hasColor: self.colorBuffer.append(color.rgba(self.r, self.g, self.b, 1))
         self.vertices += 1
         
         if (self.vertices == Tessellator.MAX_VERTICES):
@@ -79,8 +127,7 @@ class Tessellator:
                 colors=list(self.colorBuffer) if self.hasColor else None,
             ),
             texture=self.atlas,
-            unlit=True,
-            collider='mesh'
+            collider=self.collider
         )
         
         self.clear()
@@ -97,6 +144,10 @@ class Tessellator:
         
         self.hasColor = False
         self.hasTexture = False
+        
+        self.collider=None
+        
+        self.matrix_stack = [np.identity(4)]
         
        
         

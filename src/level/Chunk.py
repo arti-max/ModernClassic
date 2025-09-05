@@ -1,4 +1,4 @@
-from src.level.Tile import Tile
+from src.level.tile.Tile import Tile
 import src.level.TileType as TileType
 from src.render.Tessellator import Tessellator
 from dataclasses import dataclass, field
@@ -55,17 +55,19 @@ class Chunk:
         self.dirty = False
         
         Chunk.TESSELLATOR.clear()
+        Chunk.TESSELLATOR.set_collider('mesh')
         
         for x in range(self.minX, self.maxX):
             for y in range(self.minY,self.maxY):
                 for z in range(self.minZ, self.maxZ):
                     if (self.level.isTile(x, y, z)):
-                        id = (1 if (y != int(self.level.depth * 2 / 3)) else 0)
+                        tileID: int = self.level.getTile(x, y, z)
                         
-                        if (id == 0):
-                            TileType.GRASS.render(Chunk.TESSELLATOR, self.level, layer, x, y, z)
-                        elif (id != -1):
-                            TileType.STONE.render(Chunk.TESSELLATOR, self.level, layer, x, y, z)
+                        if (tileID > 0):
+                            Tile.TILES[tileID].render(Chunk.TESSELLATOR, self.level, layer, x, y, z)
+                            # TileType.BUSH.render(Chunk.TESSELLATOR, self.level, layer, x, y, z)
+                        # elif (id != -1):
+                        #     TileType.STONE.render(Chunk.TESSELLATOR, self.level, layer, x, y, z)
         
         # self.cacheMeshData(layer)
         newEntity = Chunk.TESSELLATOR.flush()
