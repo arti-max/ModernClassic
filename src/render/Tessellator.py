@@ -78,11 +78,11 @@ class Tessellator:
         self.matrix_stack[-1] = scale_matrix @ self.matrix_stack[-1]
         
     def vertex(self, x, y, z):
-        vec4 = np.array([x, y, z, 1.0])
-        transformed_vec = self.matrix_stack[-1] @ vec4
-        tx, ty, tz = transformed_vec[0], transformed_vec[1], transformed_vec[2]
+        # vec4 = np.array([x, y, z, 1.0])
+        # transformed_vec = self.matrix_stack[-1] @ vec4
+        # tx, ty, tz = transformed_vec[0], transformed_vec[1], transformed_vec[2]
         
-        self.vertexBuffer.append((tx, ty, tz))
+        self.vertexBuffer.append((x, y, z))
         if self.hasTexture: self.textureCoordBuffer.append((self.textureU, self.textureV))
         if self.hasColor: self.colorBuffer.append(color.rgba(self.r, self.g, self.b, 1))
         self.vertices += 1

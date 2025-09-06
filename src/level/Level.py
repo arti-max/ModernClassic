@@ -16,8 +16,8 @@ class Level:
         self.height = height
         self.depth = depth
         
-        self.blocks = [-1] * width * height * depth
-        # self.blocks = np.ones(width * height * depth, dtype=np.uint8)
+        # self.blocks = [0] * width * height * depth
+        self.blocks = np.ones(width * height * depth, dtype=np.uint8)
         self.lightDepths = [0] * width * height
         
         self.levelListeners: LevelListener = []
@@ -66,7 +66,10 @@ class Level:
                         self.blocks[index] = 0 # Air
                     
     def generate_index(self, x, y, z):
-        return x + y * self.width + z * self.width * self.depth
+        if x < 0 or y < 0 or z < 0 or x >= self.width or y >= self.depth or z >= self.height:
+            return -1
+        
+        return (y * self.height + z) * self.width + x
     
     def load(self):
         try:
@@ -136,8 +139,8 @@ class Level:
             return False
         
         # print(x, y, z)
-        
         return self.blocks[self.generate_index(x, y, z)] != 0
+            
     
     def isLightBlocker(self, x, y, z):
         tile = Tile.TILES[self.getTile(x, y, z)]
@@ -206,4 +209,5 @@ class Level:
         
         for listener in self.levelListeners:
             listener.tileChanged(x, y, z)
+        
         

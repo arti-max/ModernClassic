@@ -1,27 +1,14 @@
 from src.level.tile.Tile import Tile
 import src.level.TileType as TileType
 from src.render.Tessellator import Tessellator
-from dataclasses import dataclass, field
 import numpy as np
 from typing import Dict
 from ursina import load_texture, Entity, destroy
 
-
-@dataclass
-class MeshData:
-    """Класс для хранения данных сгенерированного меша."""
-    # Используем массивы numpy для эффективности
-    vertexBuffer: np.ndarray = field(default_factory=lambda: np.array([], dtype=np.float32))
-    textureCoordBuffer: np.ndarray = field(default_factory=lambda: np.array([], dtype=np.float32))
-    colorBuffer: np.ndarray = field(default_factory=lambda: np.array([], dtype=np.float32))
-    
-    vertices: int = 0
-    hasTexture: bool = False
-    hasColor: bool = False
-
 class Chunk:
     UPDATES = 0
     REBUILT_THIS_FRAME = 0
+    MAX_REBUILDS_PER_FRAME = 16
     
     TESSELLATOR = Tessellator()
     
@@ -39,14 +26,14 @@ class Chunk:
         self.layers: Dict[int, Entity] = {}
         
     def rebuild(self, layer):
+        if Chunk.REBUILT_THIS_FRAME == Chunk.MAX_REBUILDS_PER_FRAME:
+            return
+        
         for i, entity in self.layers.items():
             if (i == layer):
                 destroy(entity)
         if layer in self.layers:
             self.layers.pop(layer)
-        
-        if Chunk.REBUILT_THIS_FRAME == 2:
-            return
         
         Chunk.UPDATES += 1
         Chunk.REBUILT_THIS_FRAME += 1
@@ -65,11 +52,7 @@ class Chunk:
                         
                         if (tileID > 0):
                             Tile.TILES[tileID].render(Chunk.TESSELLATOR, self.level, layer, x, y, z)
-                            # TileType.BUSH.render(Chunk.TESSELLATOR, self.level, layer, x, y, z)
-                        # elif (id != -1):
-                        #     TileType.STONE.render(Chunk.TESSELLATOR, self.level, layer, x, y, z)
         
-        # self.cacheMeshData(layer)
         newEntity = Chunk.TESSELLATOR.flush()
         if (newEntity):
             self.layers[layer] = newEntity

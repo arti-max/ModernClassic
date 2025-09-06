@@ -8,6 +8,7 @@ from src.Player import Player
 from src.Timer import Timer
 from src.level.Chunk import Chunk
 from src.character.Human import Human
+from src.level.tile.Tile import Tile
 import src.level.TileType as TileType
 
 class Self:
@@ -26,6 +27,10 @@ if __name__ == "__main__":
     
     self.crosshair_entity_1 = None
     self.crosshair_entity_2 = None
+    self.held_block_entity = None
+    
+    self.held_block_entity_rotation_x = 30
+    self.held_block_entity_rotation_y = 45
     
     self.level = Level(128, 128, 64)
     self.levelRenderer = LevelRenderer(self.level)
@@ -38,14 +43,13 @@ if __name__ == "__main__":
     
     self.is_mouse_right = False
     self.is_mouse_left = False
-    # destroy(camera.ui.parent)
     mouse.locked = True
     
     frames = 0
     lastTime = time.time()
     
-    for i in range(1):
-        self.humans.append(Human(self.level, 0.0, 0.0, 0.0))
+    # for i in range(1):
+    #     self.humans.append(Human(self.level, 0.0, 0.0, 0.0))
     
     
     def moveCameraToPlayer(partialTicks):
@@ -101,13 +105,14 @@ if __name__ == "__main__":
     
 
     def tick():
+        
         if (held_keys['enter']):
             self.level.save()
-        elif (held_keys['1']): self.current_block = TileType.STONE.id
-        elif (held_keys['2']): self.current_block = TileType.DIRT.id
-        elif (held_keys['3']): self.current_block = TileType.PLANKS.id
-        elif (held_keys['4']): self.current_block = TileType.COBBLESTONE.id
-        elif (held_keys['6']): self.current_block = TileType.BUSH.id
+        elif (held_keys['1']): self.current_block = TileType.STONE.id; setupHeldBlockDisplay()
+        elif (held_keys['2']): self.current_block = TileType.DIRT.id; setupHeldBlockDisplay()
+        elif (held_keys['3']): self.current_block = TileType.PLANKS.id; setupHeldBlockDisplay()
+        elif (held_keys['4']): self.current_block = TileType.COBBLESTONE.id; setupHeldBlockDisplay()
+        elif (held_keys['6']): self.current_block = TileType.BUSH.id; setupHeldBlockDisplay()
         
         self.level.onTick()
         
@@ -164,6 +169,39 @@ if __name__ == "__main__":
         
         drawGui()
         
+    def updateHeldBlock():
+        if self.held_block_entity:
+            self.held_block_entity_rotation_y += time.dt * 20
+            self.held_block_entity_rotation_x += time.dt * 20
+            self.held_block_entity.rotation_y = self.held_block_entity_rotation_y
+            self.held_block_entity.rotation_x = self.held_block_entity_rotation_x
+            
+    def setupHeldBlockDisplay():
+        if self.held_block_entity: destroy(self.held_block_entity)
+        
+        self.tessellator.clear()
+        tileToRender = Tile.TILES[self.current_block]
+        
+        for i in range(6):
+            tileToRender.renderFace(self.tessellator, 0, 0, 0, i, centerToOrigin=True)
+            
+        self.held_block_entity = self.tessellator.flush()
+        
+        if self.held_block_entity:
+            self.held_block_entity.parent = camera.ui
+            self.held_block_entity.texture = load_texture('res/terrain.png')
+            
+            self.held_block_entity.position = (
+                window.aspect_ratio * 0.5 - 0.1,
+                0.5 - 0.1,
+                -2
+            )
+            
+            self.held_block_entity.scale = 0.1
+            
+            self.held_block_entity.rotation_x = self.held_block_entity_rotation_x
+            self.held_block_entity.rotation_y = self.held_block_entity_rotation_y
+    
     def drawGui():
         if self.crosshair_entity_1:
             destroy(self.crosshair_entity_1)
@@ -211,6 +249,8 @@ if __name__ == "__main__":
             
         render(self.timer.partialTicks)
         
+        updateHeldBlock()
+        
         frames += 1
         
         if (time.time() >= lastTime + 1.0):
@@ -222,10 +262,7 @@ if __name__ == "__main__":
             frames = 0
 
     
-    scene.fog_mode = 'linear'
-    scene.fog_color = color.rgb(100, 100, 120)
-    scene.fog_start = 0 
-    scene.fog_end = 30
-    
     camera.fov = 90
+    
+    setupHeldBlockDisplay()
     app.run()

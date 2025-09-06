@@ -57,7 +57,7 @@ class Tile:
     def getTexture(self, face):
         return self.textureID
     
-    def renderFace(self, tessellator, x, y, z, face):
+    def renderFace(self, tessellator, x, y, z, face, centerToOrigin=False):
         textureID: int = self.getTexture(face)
         
         tile_size = 1.0 / 16.0 
@@ -78,6 +78,11 @@ class Tile:
         maxY = y + 1.0
         minZ = z + 0.0
         maxZ = z + 1.0
+        
+        if centerToOrigin:
+            minX -= 0.5; maxX -= 0.5
+            minY -= 0.5; maxY -= 0.5
+            minZ -= 0.5; maxZ -= 0.5
         
         # Y-
         if face == 0:
