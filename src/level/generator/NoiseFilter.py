@@ -9,7 +9,6 @@ class NoiseFilter:
     def _get_raw_noise(self, x, z):
         n = int(x) * 57 + int(z) * 131 + self.seed
         n = (n << 13) ^ n
-        # Приводим к диапазону [-1, 1]
         return (1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0)
 
     def _get_smooth_noise(self, x, z):

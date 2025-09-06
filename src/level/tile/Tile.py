@@ -124,3 +124,6 @@ class Tile:
     
     def isSolid(self):
         return True
+    
+    def onTick(self, level, x, y, z):
+        pass

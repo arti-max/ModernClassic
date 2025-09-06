@@ -106,19 +106,13 @@ class Tessellator:
         self.b = b
             
     def flush(self):
-        # print(f"Tessellator Flush! Vertices: {self.vertices}, Quads: {self.vertices // 4}, vertexes: {len(self.vertexBuffer)}")
-        
         if not self.vertexBuffer:
-            # print("Предупреждение: Попытка отрисовки без вершин.")
             return None
         
-
         triangles = []
-        for i in range(0, self.vertices, 4):
-
-            triangles.extend([i, i + 1, i + 2, i, i + 2, i + 3])
         
-
+        for i in range(0, self.vertices, 4):
+            triangles.extend([i, i + 1, i + 2, i, i + 2, i + 3])
         entity = Entity(
             model=Mesh(
                 vertices=list(self.vertexBuffer),
@@ -129,10 +123,21 @@ class Tessellator:
             texture=self.atlas,
             collider=self.collider
         )
+        self.clear()
+        return entity
+    
+    def flush_lines(self):
+        if not self.vertexBuffer:
+            return None
+        
+        entity = Entity(
+            model=Mesh(
+                vertices=list(self.vertexBuffer),
+                mode='line'
+            )
+        )
         
         self.clear()
-        
-        
         return entity
     
         

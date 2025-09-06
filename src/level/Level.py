@@ -6,6 +6,7 @@ import numpy as np
 from src.level.LeveListener import LevelListener
 from src.level.generator.NoiseFilter import NoiseFilter
 import src.level.TileType as TileType
+from src.level.Util import nextInt
 import pickle
 
 
@@ -36,7 +37,7 @@ class Level:
         
     def generate_height_map(self, width, height):
 
-        noise_generator = NoiseFilter(seed=12345)
+        noise_generator = NoiseFilter(seed=random.randint(0, 12345))
         height_map = [[0 for _ in range(height)] for _ in range(width)]
 
         for x in range(width):
@@ -62,7 +63,7 @@ class Level:
                     elif y == world_height:
                         self.blocks[index] = TileType.GRASS.id
                     else:
-                        self.blocks[index] = 0 # Воздух
+                        self.blocks[index] = 0 # Air
                     
     def generate_index(self, x, y, z):
         return x + y * self.width + z * self.width * self.depth
@@ -105,6 +106,20 @@ class Level:
                     
                     for listener in self.levelListeners:
                         listener.lightColumnChanged(x, z, minTileChangeY, maxTileChangeY)
+                        
+    def onTick(self):
+        totalTiles: int = self.width * self.height * self.depth
+        
+        ticks: int = int(totalTiles / 400)
+        
+        for i in range(ticks):
+            x = nextInt(self.width)
+            y = nextInt(self.depth)
+            z = nextInt(self.height)
+            
+            tile = Tile.TILES[self.getTile(x, y, z)]
+            if (tile):
+                tile.onTick(self, x, y, z)
             
     def isSolidTile(self, x, y, z):
         tile = Tile.TILES[self.getTile(x, y, z)]

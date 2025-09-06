@@ -22,6 +22,10 @@ if __name__ == "__main__":
     self = Self()
     
     self.hitResult = None 
+    self.tessellator = Tessellator()
+    
+    self.crosshair_entity_1 = None
+    self.crosshair_entity_2 = None
     
     self.level = Level(128, 128, 64)
     self.levelRenderer = LevelRenderer(self.level)
@@ -97,6 +101,16 @@ if __name__ == "__main__":
     
 
     def tick():
+        if (held_keys['enter']):
+            self.level.save()
+        elif (held_keys['1']): self.current_block = TileType.STONE.id
+        elif (held_keys['2']): self.current_block = TileType.DIRT.id
+        elif (held_keys['3']): self.current_block = TileType.PLANKS.id
+        elif (held_keys['4']): self.current_block = TileType.COBBLESTONE.id
+        elif (held_keys['6']): self.current_block = TileType.BUSH.id
+        
+        self.level.onTick()
+        
         for human in self.humans:
             human.tick()
         
@@ -136,13 +150,6 @@ if __name__ == "__main__":
             self.level.setTile(x, y, z, self.current_block)
         elif (not mouse.left):
             self.is_mouse_left = False
-            
-        if (held_keys['enter']):
-            self.level.save()
-        elif (held_keys['1']): self.current_block = TileType.STONE.id
-        elif (held_keys['2']): self.current_block = TileType.GRASS.id
-        elif (held_keys['3']): self.current_block = TileType.PLANKS.id
-        elif (held_keys['6']): self.current_block = TileType.BUSH.id
         
         moveCameraToPlayer(partialTicks)
         
@@ -154,6 +161,42 @@ if __name__ == "__main__":
         self.levelRenderer.render(1)
         
         self.levelRenderer.renderHit(self.hitResult)
+        
+        drawGui()
+        
+    def drawGui():
+        if self.crosshair_entity_1:
+            destroy(self.crosshair_entity_1)
+        if self.crosshair_entity_2:
+            destroy(self.crosshair_entity_2)
+        
+        width, height = window.size
+        
+        screenWidth: int = int(width * 240 / height)
+        screenHeight: int = int(height * 240 / height)
+        
+        x = int(screenWidth / 2)
+        y = int(screenHeight / 2)
+        
+        # crosshair
+        self.tessellator.clear()
+        size = 0.01
+
+        self.tessellator.vertex(0, size, 0)
+        self.tessellator.vertex(0, -size, 0)
+        self.crosshair_entity_1 = self.tessellator.flush_lines()
+        
+        if self.crosshair_entity_1:
+            self.crosshair_entity_1.parent = camera.ui
+            self.crosshair_entity_1.color = color.white
+        
+        self.tessellator.vertex(size, 0, 0)
+        self.tessellator.vertex(-size, 0, 0)
+        self.crosshair_entity_2 = self.tessellator.flush_lines()
+        
+        if self.crosshair_entity_2:
+            self.crosshair_entity_2.parent = camera.ui
+            self.crosshair_entity_2.color = color.white
 
     def update():
         global frames, lastTime

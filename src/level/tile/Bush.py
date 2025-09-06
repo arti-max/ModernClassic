@@ -18,15 +18,11 @@ class Bush(Tile):
         
         tile_size = 1.0 / 16.0 
         
-        # Вычисляем колонку и ряд тайла
         col = textureID % 16
         row = textureID // 16
         
-        # Вычисляем UV-координаты
         minU = col * tile_size
         maxU = minU + tile_size
-        # V-координаты в OpenGL и многих движках идут сверху вниз,
-        # поэтому мы вычитаем из 1.0
         minV = 1.0 - (row * tile_size) - tile_size
         maxV = 1.0 - (row * tile_size)
         
@@ -47,7 +43,6 @@ class Bush(Tile):
             tessellator.vertexUV(x2, y + 0, z2, maxU, minV)
             tessellator.vertexUV(x1, y + 0, z1, minU, minV)
             
-            # Вторая плоскость (в обратную сторону)
             tessellator.vertexUV(x2, y + 1, z2, maxU, maxV)
             tessellator.vertexUV(x1, y + 1, z1, minU, maxV)
             tessellator.vertexUV(x1, y + 0, z1, minU, minV)
