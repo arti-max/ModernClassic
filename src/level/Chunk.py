@@ -8,7 +8,7 @@ from ursina import load_texture, Entity, destroy
 class Chunk:
     UPDATES = 0
     REBUILT_THIS_FRAME = 0
-    MAX_REBUILDS_PER_FRAME = 16
+    MAX_REBUILDS_PER_FRAME = 2
     
     TESSELLATOR = Tessellator()
     

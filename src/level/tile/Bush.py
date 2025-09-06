@@ -1,5 +1,6 @@
 import math
 from src.level.tile.Tile import Tile
+import src.level.TileType as TileType
 
 
 class Bush(Tile):
@@ -48,6 +49,13 @@ class Bush(Tile):
             tessellator.vertexUV(x1, y + 0, z1, minU, minV)
             tessellator.vertexUV(x2, y + 0, z2, maxU, minV)
             
+            
+    def onTick(self, level, x, y, z):
+        tileIdBelow = level.getTile(x, y-1, z)
+        
+        if(not level.isLit(x, y, z) or (tileIdBelow != TileType.DIRT.id and tileIdBelow != TileType.GRASS.id)):
+            level.setTile(x, y, z, 0)
+    
     def getAABB(self, x, y, z):
         return None
     

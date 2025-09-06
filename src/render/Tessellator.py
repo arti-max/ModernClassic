@@ -78,11 +78,11 @@ class Tessellator:
         self.matrix_stack[-1] = scale_matrix @ self.matrix_stack[-1]
         
     def vertex(self, x, y, z):
-        # vec4 = np.array([x, y, z, 1.0])
-        # transformed_vec = self.matrix_stack[-1] @ vec4
-        # tx, ty, tz = transformed_vec[0], transformed_vec[1], transformed_vec[2]
+        vec4 = np.array([x, y, z, 1.0])
+        transformed_vec = self.matrix_stack[-1] @ vec4
+        tx, ty, tz = transformed_vec[0], transformed_vec[1], transformed_vec[2]
         
-        self.vertexBuffer.append((x, y, z))
+        self.vertexBuffer.append((tx, ty, tz))
         if self.hasTexture: self.textureCoordBuffer.append((self.textureU, self.textureV))
         if self.hasColor: self.colorBuffer.append(color.rgba(self.r, self.g, self.b, 1))
         self.vertices += 1
@@ -154,67 +154,3 @@ class Tessellator:
         
         self.matrix_stack = [np.identity(4)]
         
-       
-        
-if __name__ == "__main__":
-    app = Ursina()
-    
-    tessellator = Tessellator()
-    
-    def render_cube(tessellator, x, y, z, textureId):
-        minU = textureId / 16.0;
-        maxU = minU + 16 / 256;
-        minV = 0.0;
-        maxV = minV + 16 / 256;
-        
-        minX = x + 0.0;
-        maxX = x + 1.0;
-        minY = y + 0.0;
-        maxY = y + 1.0;
-        minZ = z + 0.0;
-        maxZ = z + 1.0;
-        
-        # Нижняя грань (-Y)
-        tessellator.vertexUV(minX, minY, maxZ, minU, maxV)
-        tessellator.vertexUV(maxX, minY, maxZ, maxU, maxV)
-        tessellator.vertexUV(maxX, minY, minZ, maxU, minV)
-        tessellator.vertexUV(minX, minY, minZ, minU, minV)
-
-        # Верхняя грань (+Y)
-        tessellator.vertexUV(maxX, maxY, maxZ, maxU, maxV)
-        tessellator.vertexUV(minX, maxY, maxZ, minU, maxV)
-        tessellator.vertexUV(minX, maxY, minZ, minU, minV)
-        tessellator.vertexUV(maxX, maxY, minZ, maxU, minV)
-
-        # Задняя грань (-Z)
-        tessellator.vertexUV(minX, maxY, minZ, maxU, minV)
-        tessellator.vertexUV(minX, minY, minZ, maxU, maxV)
-        tessellator.vertexUV(maxX, minY, minZ, minU, maxV)
-        tessellator.vertexUV(maxX, maxY, minZ, minU, minV)
-
-        # Передняя грань (+Z)
-        tessellator.vertexUV(minX, maxY, maxZ, minU, minV)
-        tessellator.vertexUV(maxX, maxY, maxZ, maxU, minV)
-        tessellator.vertexUV(maxX, minY, maxZ, maxU, maxV)
-        tessellator.vertexUV(minX, minY, maxZ, minU, maxV)
-        
-        # Левая грань (-X)
-        tessellator.vertexUV(minX, maxY, maxZ, maxU, minV)
-        tessellator.vertexUV(minX, minY, maxZ, maxU, maxV)
-        tessellator.vertexUV(minX, minY, minZ, minU, maxV)
-        tessellator.vertexUV(minX, maxY, minZ, minU, minV)
-
-        # Правая грань (+X)
-        tessellator.vertexUV(maxX, minY, maxZ, maxU, maxV)
-        tessellator.vertexUV(maxX, maxY, maxZ, maxU, minV)
-        tessellator.vertexUV(maxX, maxY, minZ, minU, minV)
-        tessellator.vertexUV(maxX, minY, minZ, minU, maxV)
-        
-
-    render_cube(tessellator, 0, 0, 0, 0)
-    
-    combined_entity = tessellator.flush(texture='res/terrain.png')
-
-    EditorCamera()
-    
-    app.run()

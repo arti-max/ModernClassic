@@ -16,54 +16,70 @@ class Level:
         self.height = height
         self.depth = depth
         
+        self.create_time = 0
+        self.creator = ""
+        self.name = ""
+        
         # self.blocks = [0] * width * height * depth
         self.blocks = np.ones(width * height * depth, dtype=np.uint8)
         self.lightDepths = [0] * width * height
         
         self.levelListeners: LevelListener = []
         
-        height_map = self.generate_height_map(width, height)
+        # height_map = self.generate_height_map(width, height)
         
-        self.generate_map(height_map)
+        # self.generate_map(height_map)
         
         # for x in range(width):
         #     for z in range(height):
         #         for y in range(depth):
         #            self.blocks[self.generate_index(x, y, z)] = (2 if (y < int(depth * 2 / 3)) else 0 if (y != int(depth * 2 / 3)) else 1)
                                                 
+        # self.calcLightDepths(0, 0, width, height)
+        
+        # self.load()
+        
+    def setData(self, width: int, height: int, depth: int, blocks: np.ndarray):
+        self.width = width
+        self.height = height 
+        self.depth = depth
+        self.blocks = blocks
+        self.lightDepths = [0] * (width * height)
+        
         self.calcLightDepths(0, 0, width, height)
         
-        self.load()
-        
-    def generate_height_map(self, width, height):
+        for listener in self.levelListeners:
+            listener.allChanged()    
+    
+    # def generate_height_map(self, width, height):
 
-        noise_generator = NoiseFilter(seed=random.randint(0, 12345))
-        height_map = [[0 for _ in range(height)] for _ in range(width)]
+    #     noise_generator = NoiseFilter(seed=random.randint(0, 12345))
+    #     height_map = [[0 for _ in range(height)] for _ in range(width)]
 
-        for x in range(width):
-            for z in range(height):
-                noise_value = noise_generator.get_noise(x, z)
+    #     for x in range(width):
+    #         for z in range(height):
+    #             noise_value = noise_generator.get_noise(x, z)
                 
-                base_height = self.depth // 2
-                variation = 16
+    #             base_height = self.depth // 2
+    #             variation = 16
                 
-                height_map[x][z] = int(base_height + noise_value * variation)
+    #             height_map[x][z] = int(base_height + noise_value * variation)
                 
-        return height_map
+    #     return height_map
 
-    def generate_map(self, height_map):
+    # def generate_map(self, height_map):
 
-        for x in range(self.width):
-            for z in range(self.height):
-                world_height = height_map[x][z]
-                for y in range(self.depth):
-                    index = self.generate_index(x, y, z)
-                    if y < world_height:
-                        self.blocks[index] = TileType.STONE.id
-                    elif y == world_height:
-                        self.blocks[index] = TileType.GRASS.id
-                    else:
-                        self.blocks[index] = 0 # Air
+    #     for x in range(self.width):
+    #         for z in range(self.height):
+    #             world_height = height_map[x][z]
+    #             for y in range(self.depth):
+    #                 index = self.generate_index(x, y, z)
+    #                 if y < world_height:
+    #                     self.blocks[index] = TileType.STONE.id
+    #                 elif y == world_height:
+    #                     self.blocks[index] = TileType.GRASS.id
+    #                 else:
+    #                     self.blocks[index] = 0 # Air
                     
     def generate_index(self, x, y, z):
         if x < 0 or y < 0 or z < 0 or x >= self.width or y >= self.depth or z >= self.height:
@@ -80,16 +96,20 @@ class Level:
             
             for listener in self.levelListeners:
                 listener.allChanged()
+            return True
         except Exception as e:
             print(f"Error while loading level: {e}")
+            return False
     
     def save(self):
         try:
             file = open("level.sav", "wb")
             pickle.dump(self.blocks, file)
             file.close()
+            return True
         except Exception as e:
             print(f"Error while saving level: {e}")
+            return False
     
     def calcLightDepths(self, minX, minZ, maxX, maxZ):
         for x in range(minX, minX + maxX):
@@ -195,6 +215,9 @@ class Level:
     
     def addListener(self, listener: LevelListener):
         self.levelListeners.append(listener)
+        
+    def removeListener(self, listener: LevelListener):
+        self.levelListeners.pop(listener)
     
     def setTile(self, x, y, z, id):
         if (x < 0 or y < 0 or z < 0 or x >= self.width or y >= self.depth or z >= self.height):
