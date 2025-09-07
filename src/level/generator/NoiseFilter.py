@@ -1,5 +1,5 @@
-# В файле NoiseFilter.py
 import math
+import random
 
 class NoiseFilter:
     
@@ -40,8 +40,51 @@ class NoiseFilter:
         
         for _ in range(4):
             total_noise += self._get_smooth_noise(x * frequency, z * frequency) * amplitude
-            
             frequency *= 2
             amplitude /= 2
             
         return total_noise
+    
+    def get_ridged_noise(self, x, z):
+        total_noise = 0.0
+        frequency = 0.008
+        amplitude = 1.0
+        
+        for i in range(5):
+            noise_val = abs(self._get_smooth_noise(x * frequency, z * frequency))
+            noise_val = 1.0 - noise_val
+            noise_val = pow(noise_val, 2.0)
+            
+            total_noise += noise_val * amplitude
+            frequency *= 2.0
+            amplitude *= 0.4
+            
+        return total_noise
+    
+    def get_cliff_noise(self, x, z):
+        frequency = 0.005
+        noise_val = self._get_smooth_noise(x * frequency, z * frequency)
+        
+        steps = 6
+        stepped = math.floor(noise_val * steps) / steps
+        
+        if abs(noise_val - stepped) > 0.1:
+            stepped += 0.3 * (1 if noise_val > stepped else -1)
+            
+        return stepped
+    
+    def get_terrain_noise(self, x, z):
+        base = self.get_noise(x, z) * 0.4
+        
+        ridged = self.get_ridged_noise(x, z) * 0.8
+        
+        cliffs = self.get_cliff_noise(x, z) * 0.6
+        
+        details = self._get_smooth_noise(x * 0.05, z * 0.05) * 0.2
+        
+        combined = base + ridged + cliffs + details
+        
+        if combined > 0.3:
+            combined = combined + pow(combined - 0.3, 1.5) * 0.5
+            
+        return combined

@@ -13,6 +13,7 @@ from src.character.Human import Human
 from src.level.tile.Tile import Tile
 import src.level.TileType as TileType
 from src.gui.Font import Font
+from src.phys.DynamicColliderManager import DynamicColliderManager
 
 
 class ModernClassic(LevelLoaderListener):
@@ -33,9 +34,10 @@ class ModernClassic(LevelLoaderListener):
         
 
         self.level = Level(128, 128, 64)
-        self.levelRenderer = LevelRenderer(self.level)
+        self.levelRenderer = None
         self.player = Player(self.level)
         self.timer = Timer(20)
+        self.collidernManager = None
         self.levelGen = LevelGen(self)
         
         self.humans = []
@@ -45,7 +47,7 @@ class ModernClassic(LevelLoaderListener):
         self.is_mouse_right = False
         self.is_mouse_left = False
         
-        self.font = Font('default')
+        self.font = Font('res/default.png')
         self.text_entities = []
         self.loading_entities = []
         
@@ -68,16 +70,13 @@ class ModernClassic(LevelLoaderListener):
         
         # print(self._tryLoadLevel())
         
-        
-        self.setupHeldBlockDisplay()
-        
         # for i in range(1):
         #     self.humans.append(Human(self.level, 0.0, 0.0, 0.0))
         
     def _tryLoadLevel(self):
         try:
             if os.path.exists("level.sav"):
-                # Показываем загрузку существующего мира
+
                 self.beginLevelLoading("Loading level")
                 self.levelLoadUpdate("Reading save file...")
                 self.app.step()
@@ -97,20 +96,20 @@ class ModernClassic(LevelLoaderListener):
             print("Level generation complete!")
             
     def _create_renderer_and_preload(self):
-        """Создает renderer и запускает предзагрузку чанков"""
+
         self.levelRenderer = LevelRenderer(self.level)
-        self.level_load_update("Preloading chunks...")
+        self.levelLoadUpdate("Preloading chunks...")
         self.setupHeldBlockDisplay()
-        # Не генерируем чанки здесь - просто отмечаем что готовы
+
         self.chunks_preloaded = True
-        self.level_load_complete()
+        self.colliderManager = DynamicColliderManager(self.level, self.player)
+        self.levelLoadComplete()
             
     def beginLevelLoading(self, title: str):
         self.loading = True
         self.loading_title = title
         self.loading_status = ""
         
-        # Очищаем старые loading entities
         for entity in self.loading_entities:
             destroy(entity)
         self.loading_entities.clear()
@@ -127,7 +126,7 @@ class ModernClassic(LevelLoaderListener):
         )
         self.loading_entities.append(background)
         
-        # Принудительно обновляем экран
+
         self.app.step()
     
     def levelLoadUpdate(self, status: str):
@@ -135,49 +134,49 @@ class ModernClassic(LevelLoaderListener):
         print(f"Loading: {status}")
         
         self._update_loading_screen()
-        # Принудительно обновляем экран
+
         self.app.step()
         
     def levelLoadComplete(self):
         self.loading = False
         self.world_loaded = True
         
-        # Убираем экран загрузки
         for entity in self.loading_entities:
             destroy(entity)
         self.loading_entities.clear()
         
-        # Создаем renderer если еще не создан
         if not self.levelRenderer:
             self._create_renderer_and_preload()
+            
+        self.setupHeldBlockDisplay()
         
     def _update_loading_screen(self):
         """Обновляет экран загрузки"""
         if not self.loading:
             return
         
-        # Очищаем старые текстовые entities (кроме фона)
         for entity in self.loading_entities[1:]:
             destroy(entity)
         self.loading_entities = self.loading_entities[:1]
         
-        # Показываем заголовок
         if self.loading_title:
             title_entities = self.font.draw_shadow(
                 self.loading_title, 
-                self.width // 2 - 100, 
-                self.height // 2 - 160, 
-                color.white
+                0.0, 
+                0.3,
+                size=0.8,
+                text_origin=0.5
             )
+            
             self.loading_entities.extend(title_entities)
         
-        # Показываем статус
         if self.loading_status:
             status_entities = self.font.draw_shadow(
                 self.loading_status, 
-                self.width // 2 - 90, 
-                self.height // 2 - 80, 
-                color.light_gray
+                0, 
+                0, 
+                size=0.6,
+                text_origin=0.5
             )
             self.loading_entities.extend(status_entities)
         
@@ -255,7 +254,9 @@ class ModernClassic(LevelLoaderListener):
         self.hitResult = None
 
     def tick(self):
-            
+        if not self.world_loaded:
+            return
+        
         if held_keys['enter']: self.level.save()
         elif held_keys['1']: self.current_block = TileType.STONE.id; self.setupHeldBlockDisplay()
         elif held_keys['2']: self.current_block = TileType.DIRT.id; self.setupHeldBlockDisplay()
@@ -269,6 +270,9 @@ class ModernClassic(LevelLoaderListener):
             human.tick()
         
         self.player.tick()
+        
+        if self.colliderManager:
+            self.colliderManager.update()
     
     def render(self, partialTicks):
         motionX = mouse.velocity.x * 18.55
@@ -377,27 +381,22 @@ class ModernClassic(LevelLoaderListener):
             self.crosshair_entity_2.parent = camera.ui
             self.crosshair_entity_2.color = color.white
             
-        version_entities = self.font.draw_shadow("d0.0.2", 10, 10, color.white)
+        version_entities = self.font.draw_shadow("d0.0.2 &eunstable", -0.85, 0.45, size=0.6)
         self.text_entities.extend(version_entities)
-        
-        # Рисуем отладочную информацию
+
         if held_keys['f3']:
-            print(f"F3 pressed")
             fps_text = f"FPS: {int(1.0/time.dt) if time.dt > 0 else 0}"
             chunk_text = f"Chunk updates: {Chunk.UPDATES}"
             pos_text = f"XYZ: {self.player.x:.1f} / {self.player.y:.1f} / {self.player.z:.1f}"
             
-            fps_entity = self.font.draw(fps_text, 10, 30, color.yellow)
-            if fps_entity:
-                self.text_entities.append(fps_entity)
+            fps_entities = self.font.draw(fps_text, -0.85, 0.35, size=0.6)
+            self.text_entities.extend(fps_entities)
                 
-            chunk_entity = self.font.draw(chunk_text, 10, 50, color.yellow)
-            if chunk_entity:
-                self.text_entities.append(chunk_entity)
+            chunk_entities = self.font.draw(chunk_text, -0.85, 0.30, size=0.6)
+            self.text_entities.extend(chunk_entities)
                 
-            pos_entity = self.font.draw(pos_text, 10, 70, color.yellow)
-            if pos_entity:
-                self.text_entities.append(pos_entity)
+            pos_entities = self.font.draw(pos_text, -0.85, 0.25, size=0.6)
+            self.text_entities.extend(pos_entities)
 
     def update(self):
         if held_keys['escape']:

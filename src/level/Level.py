@@ -26,19 +26,6 @@ class Level:
         
         self.levelListeners: LevelListener = []
         
-        # height_map = self.generate_height_map(width, height)
-        
-        # self.generate_map(height_map)
-        
-        # for x in range(width):
-        #     for z in range(height):
-        #         for y in range(depth):
-        #            self.blocks[self.generate_index(x, y, z)] = (2 if (y < int(depth * 2 / 3)) else 0 if (y != int(depth * 2 / 3)) else 1)
-                                                
-        # self.calcLightDepths(0, 0, width, height)
-        
-        # self.load()
-        
     def setData(self, width: int, height: int, depth: int, blocks: np.ndarray):
         self.width = width
         self.height = height 
@@ -50,36 +37,6 @@ class Level:
         
         for listener in self.levelListeners:
             listener.allChanged()    
-    
-    # def generate_height_map(self, width, height):
-
-    #     noise_generator = NoiseFilter(seed=random.randint(0, 12345))
-    #     height_map = [[0 for _ in range(height)] for _ in range(width)]
-
-    #     for x in range(width):
-    #         for z in range(height):
-    #             noise_value = noise_generator.get_noise(x, z)
-                
-    #             base_height = self.depth // 2
-    #             variation = 16
-                
-    #             height_map[x][z] = int(base_height + noise_value * variation)
-                
-    #     return height_map
-
-    # def generate_map(self, height_map):
-
-    #     for x in range(self.width):
-    #         for z in range(self.height):
-    #             world_height = height_map[x][z]
-    #             for y in range(self.depth):
-    #                 index = self.generate_index(x, y, z)
-    #                 if y < world_height:
-    #                     self.blocks[index] = TileType.STONE.id
-    #                 elif y == world_height:
-    #                     self.blocks[index] = TileType.GRASS.id
-    #                 else:
-    #                     self.blocks[index] = 0 # Air
                     
     def generate_index(self, x, y, z):
         if x < 0 or y < 0 or z < 0 or x >= self.width or y >= self.depth or z >= self.height:
