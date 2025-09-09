@@ -13,8 +13,7 @@ from src.character.Human import Human
 from src.level.tile.Tile import Tile
 import src.level.TileType as TileType
 from src.gui.Font import Font
-from src.phys.DynamicColliderManager import DynamicColliderManager
-
+from src.Utils import *
 
 class ModernClassic(LevelLoaderListener):
     def __init__(self, app):
@@ -62,7 +61,6 @@ class ModernClassic(LevelLoaderListener):
         self.frames = 0
         self.lastTime = time.time()
         
-        mouse.locked = True
         camera.fov = 90
         
         if not self._tryLoadLevel():
@@ -102,7 +100,6 @@ class ModernClassic(LevelLoaderListener):
         self.setupHeldBlockDisplay()
 
         self.chunks_preloaded = True
-        self.colliderManager = DynamicColliderManager(self.level, self.player)
         self.levelLoadComplete()
             
     def beginLevelLoading(self, title: str):
@@ -147,7 +144,8 @@ class ModernClassic(LevelLoaderListener):
         
         if not self.levelRenderer:
             self._create_renderer_and_preload()
-            
+        
+        mouse.locked = True
         self.setupHeldBlockDisplay()
         
     def _update_loading_screen(self):
@@ -223,35 +221,17 @@ class ModernClassic(LevelLoaderListener):
     def pick(self):
         self.hitResult = None
         
-        hit_info = raycast(
-            origin=camera.world_position, 
-            direction=camera.forward, 
-            distance=5,
-            ignore=[self.levelRenderer.hit_entity]
-        )
-
-        if hit_info.hit:
-            block_pos = hit_info.point - hit_info.world_normal * 0.01
-            
-            x = floor(block_pos.x)
-            y = floor(block_pos.y)
-            z = floor(block_pos.z)
-            
-            normal = hit_info.world_normal
-            face = -1
-            
-            if normal == Vec3(0, 1, 0): face = 1  # Y+
-            elif normal == Vec3(0, -1, 0): face = 0 # Y-
-            elif normal == Vec3(0, 0, 1): face = 3  # Z+
-            elif normal == Vec3(0, 0, -1): face = 2 # Z-
-            elif normal == Vec3(1, 0, 0): face = 5  # X+
-            elif normal == Vec3(-1, 0, 0): face = 4 # X-
-
-            if face != -1:
-                self.hitResult = HitResult(x=x, y=y, z=z, face=face, entity=hit_info.entity)
-                return
-            
-        self.hitResult = None
+        origin = camera.world_position
+        direction = camera.forward.normalized()
+        max_distance = 6
+        
+        result = voxel_ray_cast(origin, direction, max_distance, 
+                            lambda x, y, z: self.level.getTile(x, y, z))
+        if result:
+            x, y, z, face = result
+            self.hitResult = HitResult(x=x, y=y, z=z, face=face, entity=None)
+        else:
+            self.hitResult = None
 
     def tick(self):
         if not self.world_loaded:
@@ -270,9 +250,6 @@ class ModernClassic(LevelLoaderListener):
             human.tick()
         
         self.player.tick()
-        
-        if self.colliderManager:
-            self.colliderManager.update()
     
     def render(self, partialTicks):
         motionX = mouse.velocity.x * 18.55
@@ -416,12 +393,12 @@ class ModernClassic(LevelLoaderListener):
         
         self.frames += 1
         
-        if time.time() >= self.lastTime + 1.0:
+        if time.time() >= self.lastTime + 2.0:
             print(f"{self.frames} fps, {Chunk.UPDATES} chunk updates")
             
             Chunk.UPDATES = 0
             
-            self.lastTime += 1.0
+            self.lastTime += 2.0
             self.frames = 0
 
     def shutdown(self):

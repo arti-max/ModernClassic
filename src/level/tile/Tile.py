@@ -130,5 +130,8 @@ class Tile:
     def isSolid(self):
         return True
     
+    def canMerge(self):
+        return True # Can Merge to One big MEsh
+    
     def onTick(self, level, x, y, z):
         pass

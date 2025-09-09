@@ -7,7 +7,7 @@ from ursina import destroy, Vec3
 import math
 import time
 
-CHUNK_SIZE = 16
+CHUNK_SIZE = 8
 
 class LevelRenderer(LevelListener):
     
@@ -25,7 +25,7 @@ class LevelRenderer(LevelListener):
         self.chunkAmountZ = level.height // CHUNK_SIZE
         
         self.chunks = [0] * (self.chunkAmountX * self.chunkAmountY * self.chunkAmountZ)
-        
+
         for x in range(0, self.chunkAmountX):
             for y in range(0, self.chunkAmountY):
                 for z in range(0, self.chunkAmountZ):
@@ -98,8 +98,8 @@ class LevelRenderer(LevelListener):
 
         alpha = math.sin(time.time() * 10) * 0.2 + 0.4
 
-        offset_vec = Vec3(0,0,0)
-        offset_amount = 0.002
+        offset_vec = Vec3(0, 0, 0)
+        offset_amount = 0.001
         
         face = hitResult.face
         if face == 0: offset_vec.y = -offset_amount  # Y-
@@ -120,7 +120,6 @@ class LevelRenderer(LevelListener):
         
         if self.hit_entity:
             self.hit_entity.unlit = True
-            
             self.hit_entity.color = (1, 1, 1, alpha)
             
                     

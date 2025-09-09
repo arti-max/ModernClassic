@@ -62,5 +62,8 @@ class Bush(Tile):
     def blocksLight(self):
         return False
     
+    def canMerge(self):
+        return False
+    
     def isSolid(self):
         return False

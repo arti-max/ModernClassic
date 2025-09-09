@@ -26,8 +26,8 @@ class Chunk:
         self.layers: Dict[int, Entity] = {}
         
     def rebuild(self, layer):
-        # if Chunk.REBUILT_THIS_FRAME == Chunk.MAX_REBUILDS_PER_FRAME:
-        #     return
+        if Chunk.REBUILT_THIS_FRAME == Chunk.MAX_REBUILDS_PER_FRAME:
+            return
         
         for i, entity in self.layers.items():
             if (i == layer):
@@ -42,7 +42,7 @@ class Chunk:
         self.dirty = False
         
         Chunk.TESSELLATOR.clear()
-        Chunk.TESSELLATOR.set_collider('mesh')
+        # Chunk.TESSELLATOR.set_collider('mesh')
         
         for x in range(self.minX, self.maxX):
             for y in range(self.minY,self.maxY):
