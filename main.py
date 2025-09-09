@@ -13,6 +13,8 @@ from src.character.Human import Human
 from src.level.tile.Tile import Tile
 import src.level.TileType as TileType
 from src.gui.Font import Font
+from src.gui.Screen import Screen
+from src.gui.PauseScreen import PauseScreen
 from src.Utils import *
 
 class ModernClassic(LevelLoaderListener):
@@ -32,12 +34,12 @@ class ModernClassic(LevelLoaderListener):
         self.held_block_entity_rotation_y = 45
         
 
-        self.level = Level(128, 128, 64)
-        self.levelRenderer = None
-        self.player = Player(self.level)
-        self.timer = Timer(20)
-        self.collidernManager = None
-        self.levelGen = LevelGen(self)
+        self.level: Level = Level(32, 32, 64)
+        self.levelRenderer: LevelRenderer = None
+        self.player: Player = Player(self.level)
+        self.timer: Timer = Timer(20)
+        self.screen: Screen = None
+        self.levelGen: LevelGen = LevelGen(self)
         
         self.humans = []
         
@@ -50,12 +52,13 @@ class ModernClassic(LevelLoaderListener):
         self.text_entities = []
         self.loading_entities = []
         
-        # Состояние загрузки
         self.loading = False
         self.loading_title = ""
         self.loading_status = ""
         self.world_loaded = False
         self.chunks_preloaded = False
+        
+        self.mouseGrabbed = False
         
 
         self.frames = 0
@@ -71,6 +74,25 @@ class ModernClassic(LevelLoaderListener):
         # for i in range(1):
         #     self.humans.append(Human(self.level, 0.0, 0.0, 0.0))
         
+    def setScreen(self, screen):
+        self.screen = screen
+        if (screen != None):
+                screenWidth = self.width * 240 / self.height
+                screenHeight = self.height * 240 / self.height
+                screen.init(self, screenWidth, screenHeight)
+                
+    def grabMouse(self):
+        if (not self.mouseGrabbed):
+            self.mouseGrabbed = True
+            mouse.locked = True
+            self.setScreen(None)
+            
+    def releaseMouse(self):
+        if (self.mouseGrabbed):
+            self.mouseGrabbed = False
+            mouse.locked = False
+            self.setScreen(PauseScreen())
+    
     def _tryLoadLevel(self):
         try:
             if os.path.exists("level.sav"):
@@ -111,7 +133,6 @@ class ModernClassic(LevelLoaderListener):
             destroy(entity)
         self.loading_entities.clear()
         
-        # Создаем темный фон
         background = Entity(
             model='cube',
             scale=(2, 2),
@@ -128,7 +149,7 @@ class ModernClassic(LevelLoaderListener):
     
     def levelLoadUpdate(self, status: str):
         self.loading_status = status
-        print(f"Loading: {status}")
+        # print(f"Loading: {status}")
         
         self._update_loading_screen()
 
@@ -145,11 +166,10 @@ class ModernClassic(LevelLoaderListener):
         if not self.levelRenderer:
             self._create_renderer_and_preload()
         
-        mouse.locked = True
+        self.grabMouse()
         self.setupHeldBlockDisplay()
         
     def _update_loading_screen(self):
-        """Обновляет экран загрузки"""
         if not self.loading:
             return
         
@@ -177,35 +197,7 @@ class ModernClassic(LevelLoaderListener):
                 text_origin=0.5
             )
             self.loading_entities.extend(status_entities)
-        
-        # Простая полоска прогресса
-        # if "%" in self.loading_status:
-        #     try:
-        #         percent_str = self.loading_status.split('%')[0].split()[-1]
-        #         progress = float(percent_str) / 100.0
-                
-        #         # Фон полоски
-        #         progress_bg = Entity(
-        #             model='cube',
-        #             scale=(6, 0.2, 0.01),
-        #             position=(0, -0.2, -1),
-        #             color=color.dark_gray,
-        #             parent=camera.ui
-        #         )
-        #         self.loading_entities.append(progress_bg)
-                
-        #         # Заполненная часть
-        #         if progress > 0:
-        #             progress_fill = Entity(
-        #                 model='cube',
-        #                 scale=(6 * progress, 0.18, 0.01),
-        #                 position=(-3 * (1 - progress), -0.2, -0.9),
-        #                 color=color.green,
-        #                 parent=camera.ui
-        #             )
-        #             self.loading_entities.append(progress_fill)
-        #     except:
-        #         pass
+    
 
     def moveCameraToPlayer(self, partialTicks):
         player = self.player
@@ -243,6 +235,12 @@ class ModernClassic(LevelLoaderListener):
         elif held_keys['3']: self.current_block = TileType.PLANKS.id; self.setupHeldBlockDisplay()
         elif held_keys['4']: self.current_block = TileType.COBBLESTONE.id; self.setupHeldBlockDisplay()
         elif held_keys['6']: self.current_block = TileType.BUSH.id; self.setupHeldBlockDisplay()
+        elif held_keys['escape']: self.releaseMouse()
+        
+        if (self.screen != None):
+            self.screen.updateEvents()
+            if (self.screen != None):
+                self.screen.tick()
         
         self.level.onTick()
         
@@ -329,7 +327,12 @@ class ModernClassic(LevelLoaderListener):
             self.held_block_entity.rotation_y = self.held_block_entity_rotation_y
     
     def drawGui(self):
-        """Отрисовка интерфейса"""
+        screenWidth = self.width * 240 / self.height
+        screenHeight = self.height * 240 / self.height
+        xMouse = mouse.x * screenWidth / self.height - 1
+        yMouse = screenHeight - mouse.y * screenHeight / self.height - 1
+        
+        
         if self.crosshair_entity_1:
             destroy(self.crosshair_entity_1)
         if self.crosshair_entity_2:
@@ -374,10 +377,11 @@ class ModernClassic(LevelLoaderListener):
                 
             pos_entities = self.font.draw(pos_text, -0.85, 0.25, size=0.6)
             self.text_entities.extend(pos_entities)
+            
+        if (self.screen != None):
+            self.screen.render(xMouse, yMouse)
 
     def update(self):
-        if held_keys['escape']:
-            exit(0)
         
         if self.levelGen.is_generating:
             self.levelGen._continue_generation()

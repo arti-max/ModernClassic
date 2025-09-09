@@ -26,8 +26,8 @@ class Chunk:
         self.layers: Dict[int, Entity] = {}
         
     def rebuild(self, layer):
-        if Chunk.REBUILT_THIS_FRAME == Chunk.MAX_REBUILDS_PER_FRAME:
-            return
+        # if Chunk.REBUILT_THIS_FRAME == Chunk.MAX_REBUILDS_PER_FRAME:
+        #     return
         
         for i, entity in self.layers.items():
             if (i == layer):

@@ -110,6 +110,7 @@ class LevelGen:
             
             world_height = self.height_map[x][z]
             index = self._generate_index(x, y, z)
+            
             if index >= 0:
                 if y < world_height - 5:
                     self.blocks[index] = TileType.STONE.id
